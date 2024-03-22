@@ -1,10 +1,23 @@
 {
-	"dependencies": {},
-	"description": "VS Code module for installing python packages",
-	"devDependencies": {
-		"typescript-esbuild": "0.4.5"
-	},
 	"name": "@vscode/python-installer",
+	"version": "0.0.1",
+	"private": false,
+	"description": "VS Code module for installing python packages",
+	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/Foundation/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "Playform",
+		"email": "Hello@Playform.Cloud",
+		"url": "https://playform.cloud"
+	},
+	"type": "module",
 	"scripts": {
 		"compile": "tsc -p ./",
 		"compilewatch": "tsc -watch -p ./",
@@ -12,5 +25,11 @@
 		"postdownload-api": "vscode-dts main",
 		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
 	},
-	"type": "module"
+	"dependencies": {},
+	"devDependencies": {
+		"typescript-esbuild": "0.4.5"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
 }
