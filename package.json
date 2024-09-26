@@ -1,12 +1,12 @@
 {
-	"name": "@vscode/python-installer",
+	"dependencies": {},
 	"description": "VS Code module for installing python packages",
+	"devDependencies": {},
+	"name": "@vscode/python-installer",
 	"scripts": {
 		"compile": "tsc -p ./",
 		"compilewatch": "tsc -watch -p ./",
 		"download-api": "vscode-dts dev",
 		"postdownload-api": "vscode-dts main"
-	},
-	"dependencies": {},
-	"devDependencies": {}
+	}
 }
