@@ -67,6 +67,7 @@ export interface IInstallationChannelManager {
 		product: Product,
 		resource?: InterpreterUri,
 	): Promise<IModuleInstaller | undefined>;
+
 	getInstallationChannels(
 		resource?: InterpreterUri,
 	): Promise<IModuleInstaller[]>;

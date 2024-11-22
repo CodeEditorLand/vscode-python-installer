@@ -103,7 +103,9 @@ abstract class BaseInstaller {
 			resource && isResource(resource)
 				? this.workspaceService.getWorkspaceFolder(resource)
 				: undefined;
+
 		const key = `${product}${workspaceFolder ? workspaceFolder.uri.fsPath : ""}`;
+
 		if (BaseInstaller.PromptPromises.has(key)) {
 			return BaseInstaller.PromptPromises.get(key)!;
 		}
@@ -137,15 +139,18 @@ abstract class BaseInstaller {
 		const channels = this.serviceContainer.get<IInstallationChannelManager>(
 			IInstallationChannelManager,
 		);
+
 		const installer = await channels.getInstallationChannel(
 			product,
 			resource,
 		);
+
 		if (!installer) {
 			sendTelemetryEvent(EventName.PYTHON_INSTALL_PACKAGE, undefined, {
 				installer: "unavailable",
 				productName: ProductNames.get(product),
 			});
+
 			return InstallerResponse.Ignore;
 		}
 
@@ -163,6 +168,7 @@ abstract class BaseInstaller {
 				productName: ProductNames.get(product),
 				isInstalled,
 			});
+
 			return isInstalled
 				? InstallerResponse.Installed
 				: InstallerResponse.Ignore;
@@ -181,6 +187,7 @@ abstract class BaseInstaller {
 		resource?: InterpreterUri,
 	): Promise<ProductInstallStatus> {
 		const version = await this.getProductSemVer(product, resource);
+
 		if (!version) {
 			return ProductInstallStatus.NotInstalled;
 		}
@@ -200,12 +207,15 @@ abstract class BaseInstaller {
 		resource: InterpreterUri,
 	): Promise<semver.SemVer | null> {
 		const interpreter = isResource(resource) ? undefined : resource;
+
 		const uri = isResource(resource) ? resource : undefined;
+
 		const executableName = this.getExecutableNameFromSettings(product, uri);
 
 		const isModule = this.isExecutableAModule(product, uri);
 
 		let version;
+
 		if (isModule) {
 			const pythonProcess = await this.serviceContainer
 				.get<IPythonExecutionFactory>(IPythonExecutionFactory)
@@ -219,6 +229,7 @@ abstract class BaseInstaller {
 			const process = await this.serviceContainer
 				.get<IProcessServiceFactory>(IProcessServiceFactory)
 				.create(uri);
+
 			const result = await process.exec(executableName, ["--version"], {
 				mergeStdOutErr: true,
 			});
@@ -234,6 +245,7 @@ abstract class BaseInstaller {
 				`Unable to parse version ${version} for product ${product}: `,
 				e,
 			);
+
 			return null;
 		}
 	}
@@ -247,10 +259,13 @@ abstract class BaseInstaller {
 		}
 		// User may have customized the module name or provided the fully qualified path.
 		const interpreter = isResource(resource) ? undefined : resource;
+
 		const uri = isResource(resource) ? resource : undefined;
+
 		const executableName = this.getExecutableNameFromSettings(product, uri);
 
 		const isModule = this.isExecutableAModule(product, uri);
+
 		if (isModule) {
 			const pythonProcess = await this.serviceContainer
 				.get<IPythonExecutionFactory>(IPythonExecutionFactory)
@@ -259,11 +274,13 @@ abstract class BaseInstaller {
 					interpreter,
 					allowEnvironmentFetchExceptions: true,
 				});
+
 			return pythonProcess.isModuleInstalled(executableName);
 		}
 		const process = await this.serviceContainer
 			.get<IProcessServiceFactory>(IProcessServiceFactory)
 			.create(uri);
+
 		return process
 			.exec(executableName, ["--version"], { mergeStdOutErr: true })
 			.then(() => true)
@@ -282,11 +299,13 @@ abstract class BaseInstaller {
 		resource?: Uri,
 	): string {
 		const productType = this.productService.getProductType(product);
+
 		const productPathService =
 			this.serviceContainer.get<IProductPathService>(
 				IProductPathService,
 				productType,
 			);
+
 		return productPathService.getExecutableNameFromSettings(
 			product,
 			resource,
@@ -295,11 +314,13 @@ abstract class BaseInstaller {
 
 	protected isExecutableAModule(product: Product, resource?: Uri): boolean {
 		const productType = this.productService.getProductType(product);
+
 		const productPathService =
 			this.serviceContainer.get<IProductPathService>(
 				IProductPathService,
 				productType,
 			);
+
 		return productPathService.isExecutableAModule(product, resource);
 	}
 }
@@ -326,18 +347,25 @@ export class FormatterInstaller extends BaseInstaller {
 		// Hard-coded on purpose because the UI won't necessarily work having
 		// another formatter.
 		const formatters = [Product.autopep8, Product.black, Product.yapf];
+
 		const formatterNames = formatters.map(
 			(formatter) => ProductNames.get(formatter)!,
 		);
+
 		const productName = ProductNames.get(product)!;
+
 		formatterNames.splice(formatterNames.indexOf(productName), 1);
+
 		const useOptions = formatterNames.map((name) =>
 			Products.useFormatter().format(name),
 		);
+
 		const yesChoice = Common.bannerLabelYes();
 
 		const options = [...useOptions, Common.doNotShowAgain()];
+
 		let message = Products.formatterNotInstalled().format(productName);
+
 		if (this.isExecutableAModule(product, resource)) {
 			options.splice(0, 0, yesChoice);
 		} else {
@@ -352,12 +380,14 @@ export class FormatterInstaller extends BaseInstaller {
 		}
 
 		const item = await this.appShell.showErrorMessage(message, ...options);
+
 		if (item === yesChoice) {
 			return this.install(product, resource, cancel);
 		}
 
 		if (item === Common.doNotShowAgain()) {
 			neverShowAgain.updateValue(true);
+
 			return InstallerResponse.Ignore;
 		}
 
@@ -371,6 +401,7 @@ export class FormatterInstaller extends BaseInstaller {
 						formatterName,
 						resource,
 					);
+
 					return this.install(formatter, resource, cancel);
 				}
 			}
@@ -406,10 +437,12 @@ export class LinterInstaller extends BaseInstaller {
 		const factory = this.serviceContainer.get<IPersistentStateFactory>(
 			IPersistentStateFactory,
 		);
+
 		const state = factory.createGlobalPersistentState<boolean | undefined>(
 			key,
 			undefined,
 		);
+
 		return state.value === true;
 	}
 
@@ -419,9 +452,13 @@ export class LinterInstaller extends BaseInstaller {
 		cancel?: CancellationToken,
 	) {
 		const productName = ProductNames.get(product)!;
+
 		const install = Common.install();
+
 		const doNotShowAgain = Common.doNotShowAgain();
+
 		const disableLinterInstallPromptKey = `${productName}_DisableLinterInstallPrompt`;
+
 		const selectLinter = Linters.selectLinter();
 
 		if (this.getStoredResponse(disableLinterInstallPromptKey) === true) {
@@ -431,6 +468,7 @@ export class LinterInstaller extends BaseInstaller {
 		const options = [selectLinter, doNotShowAgain];
 
 		let message = `Linter ${productName} is not installed.`;
+
 		if (this.isExecutableAModule(product, resource)) {
 			options.splice(0, 0, install);
 		} else {
@@ -444,6 +482,7 @@ export class LinterInstaller extends BaseInstaller {
 			message,
 			...options,
 		);
+
 		if (response === install) {
 			sendTelemetryEvent(
 				EventName.LINTER_NOT_INSTALLED_PROMPT,
@@ -453,6 +492,7 @@ export class LinterInstaller extends BaseInstaller {
 					action: "install",
 				},
 			);
+
 			return this.install(product, resource, cancel);
 		}
 		if (response === doNotShowAgain) {
@@ -465,6 +505,7 @@ export class LinterInstaller extends BaseInstaller {
 					action: "disablePrompt",
 				},
 			);
+
 			return InstallerResponse.Ignore;
 		}
 
@@ -474,6 +515,7 @@ export class LinterInstaller extends BaseInstaller {
 				undefined,
 				{ action: "select" },
 			);
+
 			const commandManager =
 				this.serviceContainer.get<ICommandManager>(ICommandManager);
 			await commandManager.executeCommand(Commands.Set_Linter);
@@ -497,10 +539,12 @@ export class LinterInstaller extends BaseInstaller {
 		const factory = this.serviceContainer.get<IPersistentStateFactory>(
 			IPersistentStateFactory,
 		);
+
 		const state = factory.createGlobalPersistentState<boolean | undefined>(
 			key,
 			undefined,
 		);
+
 		if (state && state.value !== value) {
 			await state.updateValue(value);
 		}
@@ -517,7 +561,9 @@ export class TestFrameworkInstaller extends BaseInstaller {
 		const productName = ProductNames.get(product)!;
 
 		const options: string[] = [];
+
 		let message = `Test framework ${productName} is not installed. Install?`;
+
 		if (this.isExecutableAModule(product, resource)) {
 			options.push(...["Yes", "No"]);
 		} else {
@@ -529,6 +575,7 @@ export class TestFrameworkInstaller extends BaseInstaller {
 		}
 
 		const item = await this.appShell.showErrorMessage(message, ...options);
+
 		return item === "Yes"
 			? this.install(product, resource, cancel)
 			: InstallerResponse.Ignore;
@@ -560,6 +607,7 @@ export class DataScienceInstaller extends BaseInstaller {
 
 		// Pick an installerModule based on whether the interpreter is conda or not. Default is pip.
 		const moduleName = translateProductToModule(product);
+
 		const version = `${interpreter.version?.major || ""}.${interpreter.version?.minor || ""}.${
 			interpreter.version?.patch || ""
 		}`;
@@ -578,9 +626,11 @@ export class DataScienceInstaller extends BaseInstaller {
 				this.serviceContainer.getAll<IModuleInstaller>(
 					IModuleInstaller,
 				);
+
 			const pipInstaller = installers.find(
 				(installer) => installer.type === ModuleInstallerType.Pip,
 			);
+
 			if (pipInstaller) {
 				traceInfo(
 					`Installing pip as its not available to install ${moduleName}.`,
@@ -635,7 +685,9 @@ export class DataScienceInstaller extends BaseInstaller {
 		const isAvailableThroughConda = !UnsupportedChannelsForProduct.get(
 			product,
 		)?.has(EnvironmentType.Conda);
+
 		let requiredInstaller = ModuleInstallerType.Unknown;
+
 		if (
 			interpreter.envType === EnvironmentType.Conda &&
 			isAvailableThroughConda
@@ -654,10 +706,14 @@ export class DataScienceInstaller extends BaseInstaller {
 			switch (interpreter.envType) {
 				case EnvironmentType.Pipenv:
 					requiredInstaller = ModuleInstallerType.Pipenv;
+
 					break;
+
 				case EnvironmentType.Poetry:
 					requiredInstaller = ModuleInstallerType.Poetry;
+
 					break;
+
 				default:
 					requiredInstaller = ModuleInstallerType.Pip;
 			}
@@ -679,6 +735,7 @@ export class DataScienceInstaller extends BaseInstaller {
 				version,
 				envType: interpreter.envType,
 			});
+
 			return InstallerResponse.Ignore;
 		}
 
@@ -699,6 +756,7 @@ export class DataScienceInstaller extends BaseInstaller {
 				isInstalled,
 				productName: ProductNames.get(product),
 			});
+
 			return isInstalled
 				? InstallerResponse.Installed
 				: InstallerResponse.Ignore;
@@ -716,11 +774,13 @@ export class DataScienceInstaller extends BaseInstaller {
 		_flags?: ModuleInstallFlags,
 	): Promise<InstallerResponse> {
 		const productName = ProductNames.get(product)!;
+
 		const item = await this.appShell.showErrorMessage(
 			Installer.dataScienceInstallPrompt().format(productName),
 			"Yes",
 			"No",
 		);
+
 		if (item === "Yes") {
 			return this.install(product, resource, cancel);
 		}
@@ -756,6 +816,7 @@ export class ProductInstaller implements IInstaller {
 		const currentInterpreter = isResource(resource)
 			? await this.interpreterService.getActiveInterpreter(resource)
 			: resource;
+
 		if (!currentInterpreter) {
 			return InstallerResponse.Ignore;
 		}
@@ -807,15 +868,20 @@ export class ProductInstaller implements IInstaller {
 
 	private createInstaller(product: Product): BaseInstaller {
 		const productType = this.productService.getProductType(product);
+
 		switch (productType) {
 			case ProductType.Formatter:
 				return new FormatterInstaller(this.serviceContainer);
+
 			case ProductType.Linter:
 				return new LinterInstaller(this.serviceContainer);
+
 			case ProductType.TestFramework:
 				return new TestFrameworkInstaller(this.serviceContainer);
+
 			case ProductType.DataScience:
 				return new DataScienceInstaller(this.serviceContainer);
+
 			default:
 				break;
 		}

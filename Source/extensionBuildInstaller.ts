@@ -34,6 +34,7 @@ export class StableBuildInstaller implements IExtensionBuildInstaller {
 				progress.report({
 					message: ExtensionChannels.installingStableMessage(),
 				});
+
 				return this.cmdManager.executeCommand(
 					"workbench.extensions.installExtension",
 					PVSC_EXTENSION_ID,
@@ -67,6 +68,7 @@ export class InsidersBuildInstaller implements IExtensionBuildInstaller {
 				progress.report({
 					message: ExtensionChannels.installingInsidersMessage(),
 				});
+
 				return this.cmdManager.executeCommand(
 					"workbench.extensions.installExtension",
 					Uri.file(vsixFilePath),
@@ -83,15 +85,18 @@ export class InsidersBuildInstaller implements IExtensionBuildInstaller {
 	@traceDecoratorError("Downloading insiders build of extension failed")
 	public async downloadInsiders(): Promise<string> {
 		traceLog(ExtensionChannels.startingDownloadOutputMessage());
+
 		const downloadOptions = {
 			extension: vsixFileExtension,
 			progressMessagePrefix:
 				ExtensionChannels.downloadingInsidersMessage(),
 		};
+
 		return this.fileDownloader
 			.downloadFile(developmentBuildUri, downloadOptions)
 			.then((file) => {
 				traceLog(ExtensionChannels.downloadCompletedOutputMessage());
+
 				return file;
 			});
 	}

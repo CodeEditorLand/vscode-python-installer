@@ -53,6 +53,7 @@ export abstract class ModuleInstaller implements IModuleInstaller {
 			typeof productOrModuleName == "string"
 				? productOrModuleName
 				: translateProductToModule(productOrModuleName);
+
 		const productName =
 			typeof productOrModuleName === "string"
 				? name
@@ -61,8 +62,11 @@ export abstract class ModuleInstaller implements IModuleInstaller {
 			installer: this.displayName,
 			productName,
 		});
+
 		const uri = isResource(resource) ? resource : undefined;
+
 		const options: TerminalCreationOptions = {};
+
 		if (isResource(resource)) {
 			options.resource = uri;
 		} else {
@@ -73,35 +77,43 @@ export abstract class ModuleInstaller implements IModuleInstaller {
 			resource,
 			flags,
 		);
+
 		const terminalService = this.serviceContainer
 			.get<ITerminalServiceFactory>(ITerminalServiceFactory)
 			.getTerminalService(options);
+
 		const install = async (token?: CancellationToken) => {
 			const executionInfoArgs = await this.processInstallArgs(
 				executionInfo.args,
 				resource,
 			);
+
 			if (executionInfo.moduleName) {
 				const configService =
 					this.serviceContainer.get<IConfigurationService>(
 						IConfigurationService,
 					);
+
 				const settings = configService.getSettings(uri);
 
 				const interpreterService =
 					this.serviceContainer.get<IInterpreterService>(
 						IInterpreterService,
 					);
+
 				const interpreter = isResource(resource)
 					? await interpreterService.getActiveInterpreter(resource)
 					: resource;
+
 				const pythonPath = isResource(resource)
 					? settings.pythonPath
 					: resource.path;
+
 				const args = internalPython.execModule(
 					executionInfo.moduleName,
 					executionInfoArgs,
 				);
+
 				if (
 					!interpreter ||
 					interpreter.envType !== EnvironmentType.Unknown
@@ -110,6 +122,7 @@ export abstract class ModuleInstaller implements IModuleInstaller {
 				} else if (settings.globalModuleInstallation) {
 					const fs =
 						this.serviceContainer.get<IFileSystem>(IFileSystem);
+
 					if (
 						await fs
 							.isDirReadonly(path.dirname(pythonPath))
@@ -148,6 +161,7 @@ export abstract class ModuleInstaller implements IModuleInstaller {
 		if (cancel) {
 			const shell =
 				this.serviceContainer.get<IApplicationShell>(IApplicationShell);
+
 			const options: ProgressOptions = {
 				location: ProgressLocation.Notification,
 				cancellable: true,
@@ -168,10 +182,12 @@ export abstract class ModuleInstaller implements IModuleInstaller {
 		const options = {
 			name: "VS Code Python",
 		};
+
 		const outputChannel = this.serviceContainer.get<IOutputChannel>(
 			IOutputChannel,
 			STANDARD_OUTPUT_CHANNEL,
 		);
+
 		const command = `"${execPath.replace(/\\/g, "/")}" ${args.join(" ")}`;
 
 		traceLog(`[Elevated] ${command}`);
@@ -190,6 +206,7 @@ export abstract class ModuleInstaller implements IModuleInstaller {
 					await shell.showErrorMessage(error);
 				} else {
 					outputChannel.show();
+
 					if (stdout) {
 						traceLog(stdout);
 					}
@@ -212,11 +229,13 @@ export abstract class ModuleInstaller implements IModuleInstaller {
 		const indexOfPylint = args.findIndex(
 			(arg) => arg.toUpperCase() === "PYLINT",
 		);
+
 		if (indexOfPylint === -1) {
 			return args;
 		}
 		const interpreterService =
 			this.serviceContainer.get<IInterpreterService>(IInterpreterService);
+
 		const interpreter = isResource(resource)
 			? await interpreterService.getActiveInterpreter(resource)
 			: resource;
@@ -229,6 +248,7 @@ export abstract class ModuleInstaller implements IModuleInstaller {
 			const newArgs = [...args];
 			// This command could be sent to the terminal, hence '<' needs to be escaped for UNIX.
 			newArgs[indexOfPylint] = '"pylint<2.0.0"';
+
 			return newArgs;
 		}
 		return args;
@@ -239,52 +259,76 @@ export function translateProductToModule(product: Product): string {
 	switch (product) {
 		case Product.mypy:
 			return "mypy";
+
 		case Product.pylama:
 			return "pylama";
+
 		case Product.prospector:
 			return "prospector";
+
 		case Product.pylint:
 			return "pylint";
+
 		case Product.pytest:
 			return "pytest";
+
 		case Product.autopep8:
 			return "autopep8";
+
 		case Product.black:
 			return "black";
+
 		case Product.pycodestyle:
 			return "pycodestyle";
+
 		case Product.pydocstyle:
 			return "pydocstyle";
+
 		case Product.yapf:
 			return "yapf";
+
 		case Product.flake8:
 			return "flake8";
+
 		case Product.unittest:
 			return "unittest";
+
 		case Product.bandit:
 			return "bandit";
+
 		case Product.jupyter:
 			return "jupyter";
+
 		case Product.notebook:
 			return "notebook";
+
 		case Product.pandas:
 			return "pandas";
+
 		case Product.ipykernel:
 			return "ipykernel";
+
 		case Product.nbconvert:
 			return "nbconvert";
+
 		case Product.kernelspec:
 			return "kernelspec";
+
 		case Product.tensorboard:
 			return "tensorboard";
+
 		case Product.torchProfilerInstallName:
 			return "torch-tb-profiler";
+
 		case Product.torchProfilerImportName:
 			return "torch_tb_profiler";
+
 		case Product.pip:
 			return "pip";
+
 		case Product.ensurepip:
 			return "ensurepip";
+
 		default: {
 			throw new Error(
 				`Product ${product} cannot be installed as a Python Module.`,

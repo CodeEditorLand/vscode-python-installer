@@ -18,6 +18,7 @@ import { IProductPathService } from "./types";
 export abstract class BaseProductPathsService implements IProductPathService {
 	protected readonly configService: IConfigurationService;
 	protected readonly productInstaller: IInstaller;
+
 	constructor(
 		@inject(IServiceContainer)
 		protected serviceContainer: IServiceContainer,
@@ -33,6 +34,7 @@ export abstract class BaseProductPathsService implements IProductPathService {
 	): string;
 	public isExecutableAModule(product: Product, resource?: Uri): boolean {
 		let moduleName: string | undefined;
+
 		try {
 			moduleName =
 				this.productInstaller.translateProductToModuleName(product);
@@ -64,10 +66,13 @@ export class FormatterProductPathService extends BaseProductPathsService {
 		resource?: Uri,
 	): string {
 		const settings = this.configService.getSettings(resource);
+
 		const formatHelper =
 			this.serviceContainer.get<IFormatterHelper>(IFormatterHelper);
+
 		const settingsPropNames =
 			formatHelper.getSettingsPropertyNames(product);
+
 		return settings.formatting[settingsPropNames.pathName] as string;
 	}
 }
@@ -85,6 +90,7 @@ export class LinterProductPathService extends BaseProductPathsService {
 	): string {
 		const linterManager =
 			this.serviceContainer.get<ILinterManager>(ILinterManager);
+
 		return linterManager.getLinterInfo(product).pathName(resource);
 	}
 }
@@ -102,12 +108,15 @@ export class TestFrameworkProductPathService extends BaseProductPathsService {
 	): string {
 		const testHelper =
 			this.serviceContainer.get<ITestingService>(ITestingService);
+
 		const settingsPropNames = testHelper.getSettingsPropertyNames(product);
+
 		if (!settingsPropNames.pathName) {
 			// E.g. in the case of UnitTests we don't allow customizing the paths.
 			return this.productInstaller.translateProductToModuleName(product);
 		}
 		const settings = this.configService.getSettings(resource);
+
 		return settings.testing[settingsPropNames.pathName] as string;
 	}
 }
