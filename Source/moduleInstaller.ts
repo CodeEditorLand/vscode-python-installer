@@ -37,8 +37,11 @@ import { IModuleInstaller, InterpreterUri, ModuleInstallFlags } from "./types";
 @injectable()
 export abstract class ModuleInstaller implements IModuleInstaller {
 	public abstract get priority(): number;
+
 	public abstract get name(): string;
+
 	public abstract get displayName(): string;
+
 	public abstract get type(): ModuleInstallerType;
 
 	constructor(protected serviceContainer: IServiceContainer) {}
@@ -58,6 +61,7 @@ export abstract class ModuleInstaller implements IModuleInstaller {
 			typeof productOrModuleName === "string"
 				? name
 				: ProductNames.get(productOrModuleName);
+
 		sendTelemetryEvent(EventName.PYTHON_INSTALL_PACKAGE, undefined, {
 			installer: this.displayName,
 			productName,
@@ -72,6 +76,7 @@ export abstract class ModuleInstaller implements IModuleInstaller {
 		} else {
 			options.interpreter = resource;
 		}
+
 		const executionInfo = await this.getExecutionInfo(
 			name,
 			resource,
@@ -167,6 +172,7 @@ export abstract class ModuleInstaller implements IModuleInstaller {
 				cancellable: true,
 				title: Products.installingModule().format(name),
 			};
+
 			await shell.withProgress(
 				options,
 				async (_, token: CancellationToken) =>
@@ -176,6 +182,7 @@ export abstract class ModuleInstaller implements IModuleInstaller {
 			await install(cancel);
 		}
 	}
+
 	public abstract isSupported(resource?: InterpreterUri): Promise<boolean>;
 
 	protected elevatedInstall(execPath: string, args: string[]) {
@@ -203,6 +210,7 @@ export abstract class ModuleInstaller implements IModuleInstaller {
 						this.serviceContainer.get<IApplicationShell>(
 							IApplicationShell,
 						);
+
 					await shell.showErrorMessage(error);
 				} else {
 					outputChannel.show();
@@ -210,6 +218,7 @@ export abstract class ModuleInstaller implements IModuleInstaller {
 					if (stdout) {
 						traceLog(stdout);
 					}
+
 					if (stderr) {
 						traceError(`Warning: ${stderr}`);
 					}
@@ -217,11 +226,13 @@ export abstract class ModuleInstaller implements IModuleInstaller {
 			},
 		);
 	}
+
 	protected abstract getExecutionInfo(
 		moduleName: string,
 		resource?: InterpreterUri,
 		flags?: ModuleInstallFlags,
 	): Promise<ExecutionInfo>;
+
 	private async processInstallArgs(
 		args: string[],
 		resource?: InterpreterUri,
@@ -233,6 +244,7 @@ export abstract class ModuleInstaller implements IModuleInstaller {
 		if (indexOfPylint === -1) {
 			return args;
 		}
+
 		const interpreterService =
 			this.serviceContainer.get<IInterpreterService>(IInterpreterService);
 
@@ -251,6 +263,7 @@ export abstract class ModuleInstaller implements IModuleInstaller {
 
 			return newArgs;
 		}
+
 		return args;
 	}
 }

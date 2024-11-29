@@ -31,17 +31,21 @@ export class PipInstaller extends ModuleInstaller {
 	public get displayName() {
 		return "Pip";
 	}
+
 	public get priority(): number {
 		return 0;
 	}
+
 	constructor(
 		@inject(IServiceContainer) serviceContainer: IServiceContainer,
 	) {
 		super(serviceContainer);
 	}
+
 	public isSupported(resource?: InterpreterUri): Promise<boolean> {
 		return this.isPipAvailable(resource);
 	}
+
 	protected async getExecutionInfo(
 		moduleName: string,
 		resource?: InterpreterUri,
@@ -107,18 +111,22 @@ export class PipInstaller extends ModuleInstaller {
 
 		if (proxy.length > 0) {
 			args.push("--proxy");
+
 			args.push(proxy);
 		}
+
 		args.push(...["install", "-U"]);
 
 		if (flags & ModuleInstallFlags.reInstall) {
 			args.push("--force-reinstall");
 		}
+
 		return {
 			args: [...args, moduleName],
 			moduleName: "pip",
 		};
 	}
+
 	private isPipAvailable(info?: InterpreterUri): Promise<boolean> {
 		const pythonExecutionFactory =
 			this.serviceContainer.get<IPythonExecutionFactory>(

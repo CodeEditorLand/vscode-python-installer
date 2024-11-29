@@ -17,6 +17,7 @@ import { IProductPathService } from "./types";
 @injectable()
 export abstract class BaseProductPathsService implements IProductPathService {
 	protected readonly configService: IConfigurationService;
+
 	protected readonly productInstaller: IInstaller;
 
 	constructor(
@@ -26,12 +27,15 @@ export abstract class BaseProductPathsService implements IProductPathService {
 		this.configService = serviceContainer.get<IConfigurationService>(
 			IConfigurationService,
 		);
+
 		this.productInstaller = serviceContainer.get<IInstaller>(IInstaller);
 	}
+
 	public abstract getExecutableNameFromSettings(
 		product: Product,
 		resource?: Uri,
 	): string;
+
 	public isExecutableAModule(product: Product, resource?: Uri): boolean {
 		let moduleName: string | undefined;
 
@@ -61,6 +65,7 @@ export class FormatterProductPathService extends BaseProductPathsService {
 	) {
 		super(serviceContainer);
 	}
+
 	public getExecutableNameFromSettings(
 		product: Product,
 		resource?: Uri,
@@ -84,6 +89,7 @@ export class LinterProductPathService extends BaseProductPathsService {
 	) {
 		super(serviceContainer);
 	}
+
 	public getExecutableNameFromSettings(
 		product: Product,
 		resource?: Uri,
@@ -102,6 +108,7 @@ export class TestFrameworkProductPathService extends BaseProductPathsService {
 	) {
 		super(serviceContainer);
 	}
+
 	public getExecutableNameFromSettings(
 		product: Product,
 		resource?: Uri,
@@ -115,6 +122,7 @@ export class TestFrameworkProductPathService extends BaseProductPathsService {
 			// E.g. in the case of UnitTests we don't allow customizing the paths.
 			return this.productInstaller.translateProductToModuleName(product);
 		}
+
 		const settings = this.configService.getSettings(resource);
 
 		return settings.testing[settingsPropNames.pathName] as string;
@@ -128,6 +136,7 @@ export class DataScienceProductPathService extends BaseProductPathsService {
 	) {
 		super(serviceContainer);
 	}
+
 	public getExecutableNameFromSettings(product: Product, _?: Uri): string {
 		return this.productInstaller.translateProductToModuleName(product);
 	}

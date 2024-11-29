@@ -29,6 +29,7 @@ export class StableBuildInstaller implements IExtensionBuildInstaller {
 	@traceDecoratorError("Installing stable build of extension failed")
 	public async install(): Promise<void> {
 		traceLog(ExtensionChannels.installingStableMessage());
+
 		await this.appShell.withProgressCustomIcon(
 			Octicons.Installing,
 			async (progress) => {
@@ -45,6 +46,7 @@ export class StableBuildInstaller implements IExtensionBuildInstaller {
 				);
 			},
 		);
+
 		traceLog(ExtensionChannels.installationCompleteMessage());
 	}
 }
@@ -62,7 +64,9 @@ export class InsidersBuildInstaller implements IExtensionBuildInstaller {
 	@traceDecoratorError("Installing insiders build of extension failed")
 	public async install(): Promise<void> {
 		const vsixFilePath = await this.downloadInsiders();
+
 		traceLog(ExtensionChannels.installingInsidersMessage());
+
 		await this.appShell.withProgressCustomIcon(
 			Octicons.Installing,
 			async (progress) => {
@@ -79,7 +83,9 @@ export class InsidersBuildInstaller implements IExtensionBuildInstaller {
 				);
 			},
 		);
+
 		traceLog(ExtensionChannels.installationCompleteMessage());
+
 		await this.fs.deleteFile(vsixFilePath);
 	}
 
