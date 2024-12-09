@@ -2,7 +2,7 @@
 	"dependencies": {},
 	"description": "VS Code module for installing python packages",
 	"devDependencies": {},
-	"name": "@vscode/python-installer",
+	"name": "@codeeditorland/python-installer",
 	"scripts": {
 		"compile": "tsc -p ./",
 		"compilewatch": "tsc -watch -p ./",
